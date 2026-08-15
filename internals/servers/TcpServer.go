@@ -10,16 +10,21 @@ import (
 type TcpServer struct {
 	listener   net.Listener
 	workerPool *workers.WorkerPool
+	port       int
 }
 
-func NewTcpServer(wp *workers.WorkerPool) *TcpServer {
+func NewTcpServer(wp *workers.WorkerPool, port int) *TcpServer {
+	if port <= 0 {
+		port = 7777
+	}
 	return &TcpServer{
 		workerPool: wp,
+		port:       port,
 	}
 }
 
 func (tcp_server *TcpServer) initatServer() {
-	address := "localhost:7777"
+	address := fmt.Sprintf("127.0.0.1:%d", tcp_server.port)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		panic(err)

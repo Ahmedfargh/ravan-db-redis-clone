@@ -14,6 +14,14 @@ func NewParser(tokens []Token) *Parser {
 	return &Parser{tokens: tokens, pos: 0}
 }
 
+func NewParserFromInput(input string) (*Parser, error) {
+	tokens, err := NewLexer(input).Tokenize()
+	if err != nil {
+		return nil, err
+	}
+	return NewParser(tokens), nil
+}
+
 func (p *Parser) curToken() Token {
 	if p.pos >= len(p.tokens) {
 		return Token{Type: TOKEN_EOF, Literal: ""}
@@ -27,13 +35,16 @@ func (p *Parser) nextToken() {
 	}
 }
 
+func (p *Parser) Parse() (*CommandExpr, error) {
+	return p.ParseCommand()
+}
+
 func ParseQuery(input string) (*CommandExpr, error) {
-	tokens, err := Tokenize(input)
+	p, err := NewParserFromInput(input)
 	if err != nil {
 		return nil, err
 	}
-	p := NewParser(tokens)
-	return p.ParseCommand()
+	return p.Parse()
 }
 
 func (p *Parser) ParseCommand() (*CommandExpr, error) {

@@ -9,9 +9,10 @@ import (
 
 func TestEvaluatorBasicAndQuotedStrings(t *testing.T) {
 	database.InitiatDataStore()
+	eval := NewEvaluator(nil)
 
 	// Test SET with spaces in quotes
-	res, err := EvaluateQuery(`SET greeting "Hello World from Raven"`)
+	res, err := eval.EvaluateQuery(`SET greeting "Hello World from Raven"`)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -20,7 +21,7 @@ func TestEvaluatorBasicAndQuotedStrings(t *testing.T) {
 	}
 
 	// Test GET
-	res, err = EvaluateQuery(`GET greeting`)
+	res, err = eval.EvaluateQuery(`GET greeting`)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -31,12 +32,13 @@ func TestEvaluatorBasicAndQuotedStrings(t *testing.T) {
 
 func TestEvaluatorNestedCommands(t *testing.T) {
 	database.InitiatDataStore()
+	eval := NewEvaluator(nil)
 
 	// Set original key
-	EvaluateQuery(`SET default_role "Admin"`)
+	eval.EvaluateQuery(`SET default_role "Admin"`)
 
 	// Execute nested command: SET user_role (GET default_role)
-	res, err := EvaluateQuery(`SET user_role (GET default_role)`)
+	res, err := eval.EvaluateQuery(`SET user_role (GET default_role)`)
 	if err != nil {
 		t.Fatalf("Unexpected error in nested query: %v", err)
 	}
@@ -45,7 +47,7 @@ func TestEvaluatorNestedCommands(t *testing.T) {
 	}
 
 	// GET user_role should now be "Admin"
-	res, err = EvaluateQuery(`GET user_role`)
+	res, err = eval.EvaluateQuery(`GET user_role`)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -55,12 +57,14 @@ func TestEvaluatorNestedCommands(t *testing.T) {
 }
 
 func TestDynamicCommandRegistration(t *testing.T) {
+	eval := NewEvaluator(nil)
+
 	// Register a dynamic custom command "ECHO_UPPER" at runtime
 	commands.GlobalRegistry.Register("ECHO_UPPER", func(args []string) (string, error) {
 		return strings.ToUpper(strings.Join(args, " ")) + "\n", nil
 	})
 
-	res, err := EvaluateQuery(`ECHO_UPPER hello raven engine`)
+	res, err := eval.EvaluateQuery(`ECHO_UPPER hello raven engine`)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

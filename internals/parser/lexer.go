@@ -7,13 +7,13 @@ import (
 type TokenType string
 
 const (
-	TOKEN_EOF        TokenType = "EOF"
-	TOKEN_ILLEGAL    TokenType = "ILLEGAL"
-	TOKEN_IDENT      TokenType = "IDENT"
-	TOKEN_STRING     TokenType = "STRING"
-	TOKEN_NUMBER     TokenType = "NUMBER"
-	TOKEN_LPAREN     TokenType = "("
-	TOKEN_RPAREN     TokenType = ")"
+	TOKEN_EOF     TokenType = "EOF"
+	TOKEN_ILLEGAL TokenType = "ILLEGAL"
+	TOKEN_IDENT   TokenType = "IDENT"
+	TOKEN_STRING  TokenType = "STRING"
+	TOKEN_NUMBER  TokenType = "NUMBER"
+	TOKEN_LPAREN  TokenType = "("
+	TOKEN_RPAREN  TokenType = ")"
 )
 
 type Token struct {
@@ -133,8 +133,7 @@ func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
 
-func Tokenize(input string) ([]Token, error) {
-	l := NewLexer(input)
+func (l *Lexer) Tokenize() ([]Token, error) {
 	var tokens []Token
 	for {
 		tok := l.NextToken()
@@ -147,4 +146,8 @@ func Tokenize(input string) ([]Token, error) {
 		}
 	}
 	return tokens, nil
+}
+
+func Tokenize(input string) ([]Token, error) {
+	return NewLexer(input).Tokenize()
 }

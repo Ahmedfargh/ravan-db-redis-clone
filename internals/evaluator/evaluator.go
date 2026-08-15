@@ -7,15 +7,32 @@ import (
 	"strings"
 )
 
-func EvaluateQuery(query string) (string, error) {
-	cmdExpr, err := parser.ParseQuery(query)
+type Evaluator struct {
+	registry *commands.CommandRegistry
+}
+
+func NewEvaluator(registry *commands.CommandRegistry) *Evaluator {
+	if registry == nil {
+		registry = commands.GlobalRegistry
+	}
+	return &Evaluator{registry: registry}
+}
+
+var DefaultEvaluator = NewEvaluator(commands.GlobalRegistry)
+
+func (e *Evaluator) EvaluateQuery(query string) (string, error) {
+	p, err := parser.NewParserFromInput(query)
 	if err != nil {
 		return "", err
 	}
-	return Evaluate(cmdExpr)
+	cmdExpr, err := p.Parse()
+	if err != nil {
+		return "", err
+	}
+	return e.Evaluate(cmdExpr)
 }
 
-func Evaluate(node parser.Node) (string, error) {
+func (e *Evaluator) Evaluate(node parser.Node) (string, error) {
 	switch n := node.(type) {
 	case *parser.StringLiteral:
 		return n.Value, nil
@@ -26,7 +43,7 @@ func Evaluate(node parser.Node) (string, error) {
 	case *parser.CommandExpr:
 		var evaluatedArgs []string
 		for _, argNode := range n.Args {
-			val, err := Evaluate(argNode)
+			val, err := e.Evaluate(argNode)
 			if err != nil {
 				return "", err
 			}
@@ -35,7 +52,7 @@ func Evaluate(node parser.Node) (string, error) {
 			evaluatedArgs = append(evaluatedArgs, val)
 		}
 
-		res, err := commands.GlobalRegistry.Execute(n.CommandName, evaluatedArgs)
+		res, err := e.registry.Execute(n.CommandName, evaluatedArgs)
 		if err != nil {
 			return "", err
 		}
@@ -44,4 +61,14 @@ func Evaluate(node parser.Node) (string, error) {
 	default:
 		return "", fmt.Errorf("unknown AST node type: %T", node)
 	}
+}
+
+// EvaluateQuery is a package-level helper that delegates to DefaultEvaluator.
+func EvaluateQuery(query string) (string, error) {
+	return DefaultEvaluator.EvaluateQuery(query)
+}
+
+// Evaluate is a package-level helper that delegates to DefaultEvaluator.
+func Evaluate(node parser.Node) (string, error) {
+	return DefaultEvaluator.Evaluate(node)
 }

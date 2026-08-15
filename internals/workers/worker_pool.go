@@ -17,12 +17,14 @@ type Job struct {
 type WorkerPool struct {
 	JobQueue    chan Job
 	WorkerCount int
+	evaluator   *evaluator.Evaluator
 }
 
 func NewWorkerPool(workerCount int, queueSize int) *WorkerPool {
 	wp := &WorkerPool{
 		JobQueue:    make(chan Job, queueSize),
 		WorkerCount: workerCount,
+		evaluator:   evaluator.NewEvaluator(nil),
 	}
 	wp.Start()
 	return wp
@@ -33,15 +35,15 @@ func (wp *WorkerPool) Start() {
 		workerID := i
 		go func(id int) {
 			for job := range wp.JobQueue {
-				res := executeJob(job, id)
+				res := wp.executeJob(job, id)
 				job.ResponseChan <- res
 			}
 		}(workerID)
 	}
 }
 
-func executeJob(job Job, workerID int) Response {
-	result, err := evaluator.EvaluateQuery(job.Query)
+func (wp *WorkerPool) executeJob(job Job, workerID int) Response {
+	result, err := wp.evaluator.EvaluateQuery(job.Query)
 	if err != nil {
 		return Response{Err: err}
 	}

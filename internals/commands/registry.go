@@ -6,40 +6,58 @@ import (
 	"sync"
 )
 
-type CommandHandler func(args []string) (string, error)
+// Command is the interface that all database commands must implement.
+type Command interface {
+	Execute(args []string) (string, error)
+}
+
+// CommandHandlerFunc adapter allows plain functions to satisfy the Command interface.
+type CommandHandlerFunc func(args []string) (string, error)
+
+func (f CommandHandlerFunc) Execute(args []string) (string, error) {
+	return f(args)
+}
 
 type CommandRegistry struct {
 	mu       sync.RWMutex
-	handlers map[string]CommandHandler
+	commands map[string]Command
 }
 
 var GlobalRegistry = NewCommandRegistry()
 
 func NewCommandRegistry() *CommandRegistry {
 	r := &CommandRegistry{
-		handlers: make(map[string]CommandHandler),
+		commands: make(map[string]Command),
 	}
 	r.registerDefaults()
 	return r
 }
 
-func (r *CommandRegistry) Register(name string, handler CommandHandler) {
+func (r *CommandRegistry) Register(name string, handler any) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	r.handlers[strings.ToUpper(name)] = handler
+
+	switch h := handler.(type) {
+	case Command:
+		r.commands[strings.ToUpper(name)] = h
+	case func([]string) (string, error):
+		r.commands[strings.ToUpper(name)] = CommandHandlerFunc(h)
+	default:
+		panic(fmt.Sprintf("invalid command handler type: %T", handler))
+	}
 }
 
-func (r *CommandRegistry) Get(name string) (CommandHandler, bool) {
+func (r *CommandRegistry) Get(name string) (Command, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	handler, exists := r.handlers[strings.ToUpper(name)]
-	return handler, exists
+	cmd, exists := r.commands[strings.ToUpper(name)]
+	return cmd, exists
 }
 
 func (r *CommandRegistry) Execute(name string, args []string) (string, error) {
-	handler, exists := r.Get(name)
+	cmd, exists := r.Get(name)
 	if !exists {
 		return "", fmt.Errorf("ERR unknown command '%s'", name)
 	}
-	return handler(args)
+	return cmd.Execute(args)
 }

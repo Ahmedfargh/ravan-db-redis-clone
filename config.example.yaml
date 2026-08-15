@@ -1,0 +1,7 @@
+# Raven DB Server Configuration File Example
+workers: 8
+queue: 200
+port: 7777
+
+# CLI Client Configuration
+host: "127.0.0.1"

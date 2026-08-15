@@ -6,7 +6,8 @@ import (
 
 func TestLexerQuotedStringsAndParens(t *testing.T) {
 	input := `SET key "Hello World" (GET other_key)`
-	tokens, err := Tokenize(input)
+	lexer := NewLexer(input)
+	tokens, err := lexer.Tokenize()
 	if err != nil {
 		t.Fatalf("Unexpected lexer error: %v", err)
 	}
@@ -25,7 +26,12 @@ func TestLexerQuotedStringsAndParens(t *testing.T) {
 
 func TestParserNestedExpressions(t *testing.T) {
 	input := `SET greeting (GET default_greeting)`
-	cmdExpr, err := ParseQuery(input)
+	p, err := NewParserFromInput(input)
+	if err != nil {
+		t.Fatalf("Unexpected parser creation error: %v", err)
+	}
+
+	cmdExpr, err := p.Parse()
 	if err != nil {
 		t.Fatalf("Unexpected parser error: %v", err)
 	}
