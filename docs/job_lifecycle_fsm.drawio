@@ -1,0 +1,69 @@
+<mxfile host="app.diagrams.net" modified="2026-08-15T22:38:00.000Z" agent="Antigravity" version="21.0.0" type="device">
+  <diagram id="job-lifecycle-fsm" name="Query Job Lifecycle State Machine">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="500" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title Header -->
+        <mxCell id="title" value="Raven DB - Query Job Lifecycle State Machine" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="700" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Start Node -->
+        <mxCell id="start" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#1E293B;strokeColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="60" y="125" width="30" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- State 1: Socket Received -->
+        <mxCell id="state_1" value="StateSocketRead&#xa;(Raw TCP String Ingestion)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#0369A1;" vertex="1" parent="1">
+          <mxGeometry x="150" y="110" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_start" value="Ingest TCP bytes" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#0284C7;labelBackgroundColor=#FFFFFF;labelBorderColor=none;fontColor=#0284C7;fontStyle=1;fontSize=10;" edge="1" parent="1" source="start" target="state_1" />
+
+        <!-- State 2: Job Queued -->
+        <mxCell id="state_2" value="StateJobQueued&#xa;(Job pushed to JobQueue chan)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#1E3A8A;" vertex="1" parent="1">
+          <mxGeometry x="460" y="110" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_1_2" value="Create Job{Query, ResponseChan}" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#2563EB;labelBackgroundColor=#FFFFFF;labelBorderColor=none;fontColor=#1D4ED8;fontStyle=1;fontSize=10;" edge="1" parent="1" source="state_1" target="state_2" />
+
+        <!-- State 3: Worker Dequeued -->
+        <mxCell id="state_3" value="StateWorkerPicked&#xa;(Goroutine pops job)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#78350F;" vertex="1" parent="1">
+          <mxGeometry x="780" y="110" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_2_3" value="Worker loop pops job" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#D97706;labelBackgroundColor=#FFFFFF;labelBorderColor=none;fontColor=#B45309;fontStyle=1;fontSize=10;" edge="1" parent="1" source="state_2" target="state_3" />
+
+        <!-- State 4: Lexing & Parsing -->
+        <mxCell id="state_4" value="StateLexingParsing&#xa;(Lexer &amp; Parser AST)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#4F46E5;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#1E1B4B;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="110" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_3_4" value="NewParserFromInput()" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#4F46E5;labelBackgroundColor=#FFFFFF;labelBorderColor=none;fontColor=#4338CA;fontStyle=1;fontSize=10;" edge="1" parent="1" source="state_3" target="state_4" />
+
+        <!-- State 5: Evaluating -->
+        <mxCell id="state_5" value="StateEvaluating&#xa;(Evaluator.EvaluateQuery)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE7F3;strokeColor=#DB2777;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#831843;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="310" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_4_5" value="Pass AST to Evaluator" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#DB2777;labelBackgroundColor=#FFFFFF;labelBorderColor=none;fontColor=#BE185D;fontStyle=1;fontSize=10;" edge="1" parent="1" source="state_4" target="state_5" />
+
+        <!-- State 6: DataStore Mutating -->
+        <mxCell id="state_6" value="StateDataStoreMutating&#xa;(Read/Write under RLock/Lock)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CCFBF1;strokeColor=#0D9488;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#134E4A;" vertex="1" parent="1">
+          <mxGeometry x="780" y="310" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_5_6" value="Command.Execute()" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#0D9488;labelBackgroundColor=#FFFFFF;labelBorderColor=none;fontColor=#0F766E;fontStyle=1;fontSize=10;" edge="1" parent="1" source="state_5" target="state_6" />
+
+        <!-- State 7: Response Dispatched -->
+        <mxCell id="state_7" value="StateResponseDispatched&#xa;(Send result over chan)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;strokeWidth=2;fontStyle=1;fontSize=11;fontColor=#14532D;" vertex="1" parent="1">
+          <mxGeometry x="460" y="310" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_6_7" value="job.ResponseChan &lt;- res" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#16A34A;labelBackgroundColor=#FFFFFF;labelBorderColor=none;fontColor=#15803D;fontStyle=1;fontSize=10;" edge="1" parent="1" source="state_6" target="state_7" />
+
+        <!-- End Node -->
+        <mxCell id="end" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#1E293B;strokeColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="200" y="325" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="e_7_end" value="Write to TCP socket" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#16A34A;labelBackgroundColor=#FFFFFF;labelBorderColor=none;fontColor=#15803D;fontStyle=1;fontSize=10;" edge="1" parent="1" source="state_7" target="end" />
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

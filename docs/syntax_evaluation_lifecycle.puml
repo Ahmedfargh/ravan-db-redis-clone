@@ -1,0 +1,82 @@
+@startuml
+autonumber
+skinparam Style strictuml
+skinparam SequenceMessageAlignment center
+skinparam ResponseMessageBelowArrow true
+
+actor "Client\n(raven-cli / TCP)" as Client
+participant "Worker Pool\n(Goroutine)" as Worker
+participant "Lexer\n(Token Scanner)" as Lexer
+participant "AST Parser" as Parser
+participant "AST Evaluator" as Evaluator
+participant "Command Registry" as Registry
+database "DataStore\n(sync.RWMutex)" as DataStore
+
+== 1. Query Ingestion ==
+Client -> Worker : Send Raw Query String:\n'SET user_role (GET default_role)'
+activate Worker
+
+== 2. Lexical Analysis ==
+Worker -> Lexer : Lexer.Tokenize()
+activate Lexer
+note over Lexer
+  Scans chars & breaks into tokens:
+  [IDENT("SET"), IDENT("user_role"),
+   LPAREN("("), IDENT("GET"),
+   IDENT("default_role"), RPAREN(")")]
+end note
+Lexer --> Worker : Return []Token
+deactivate Lexer
+
+== 3. AST Construction ==
+Worker -> Parser : Parser.Parse()
+activate Parser
+note over Parser
+  Builds AST Tree:
+  CommandExpr("SET")
+  ├── Arg[0]: StringLiteral("user_role")
+  └── Arg[1]: CommandExpr("GET")
+        └── Arg[0]: StringLiteral("default_role")
+end note
+Parser --> Worker : Return Root *CommandExpr AST Node
+deactivate Parser
+
+== 4. Recursive Evaluation ==
+Worker -> Evaluator : Evaluator.Evaluate(RootASTNode)
+activate Evaluator
+
+note over Evaluator
+  Evaluate Outer Command: SET
+  1. Evaluate Arg 0: "user_role"
+end note
+
+group 5. Sub-Command Recursive Evaluation (GET default_role)
+    Evaluator -> Registry : Lookup Command: "GET"
+    Registry --> Evaluator : Return &GetCommand{}
+    Evaluator -> DataStore : GetValue("default_role") [RLock]
+    DataStore --> Evaluator : Return DataValue("Administrator")
+    note over Evaluator
+      Trim trailing newline -> "Administrator"
+    end note
+end
+
+== 6. Outer Command Execution ==
+note over Evaluator
+  2. Resolved Args: ["user_role", "Administrator"]
+end note
+
+Evaluator -> Registry : Execute("SET", ["user_role", "Administrator"])
+activate Registry
+Registry -> DataStore : SetValue("user_role", "Administrator", ttl=0) [Lock]
+DataStore --> Registry : Success
+Registry --> Evaluator : Return "OK\n"
+deactivate Registry
+
+Evaluator --> Worker : Return "OK\n"
+deactivate Evaluator
+
+== 7. Response Transport ==
+Worker --> Client : Response Bytes: "OK\n"
+deactivate Worker
+
+@enduml

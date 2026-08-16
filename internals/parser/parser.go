@@ -111,6 +111,7 @@ func (p *Parser) parseExpression() (Node, error) {
 	case TOKEN_LPAREN:
 		// Nested command expression like (GET key)
 		return p.ParseCommand()
+	//case TOKEN_SQR_PAR_OPEN:
 
 	case TOKEN_RPAREN, TOKEN_EOF:
 		return nil, nil

@@ -7,13 +7,15 @@ import (
 type TokenType string
 
 const (
-	TOKEN_EOF     TokenType = "EOF"
-	TOKEN_ILLEGAL TokenType = "ILLEGAL"
-	TOKEN_IDENT   TokenType = "IDENT"
-	TOKEN_STRING  TokenType = "STRING"
-	TOKEN_NUMBER  TokenType = "NUMBER"
-	TOKEN_LPAREN  TokenType = "("
-	TOKEN_RPAREN  TokenType = ")"
+	TOKEN_EOF          TokenType = "EOF"
+	TOKEN_ILLEGAL      TokenType = "ILLEGAL"
+	TOKEN_IDENT        TokenType = "IDENT"
+	TOKEN_STRING       TokenType = "STRING"
+	TOKEN_NUMBER       TokenType = "NUMBER"
+	TOKEN_LPAREN       TokenType = "("
+	TOKEN_RPAREN       TokenType = ")"
+	TOKEN_SQR_PAR_OPEN TokenType = "["
+	TOKEN_SQR_PAR_CLS  TokenType = "]"
 )
 
 type Token struct {

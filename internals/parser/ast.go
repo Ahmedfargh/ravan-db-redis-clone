@@ -25,6 +25,18 @@ func (nl *NumberLiteral) String() string {
 	return nl.Value
 }
 
+type ListLiteral struct {
+	Values []Node
+}
+
+func (ll *ListLiteral) string() string {
+	var argsStr []string
+	for _, arg := range ll.Values {
+		argsStr = append(argsStr, arg.String())
+	}
+	return "[" + strings.Join(argsStr, ",") + "]"
+}
+
 type CommandExpr struct {
 	CommandName string
 	Args        []Node
