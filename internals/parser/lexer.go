@@ -63,6 +63,10 @@ func (l *Lexer) NextToken() Token {
 		tok = Token{Type: TOKEN_LPAREN, Literal: "("}
 	case ')':
 		tok = Token{Type: TOKEN_RPAREN, Literal: ")"}
+	case '[':
+		tok = Token{Type: TOKEN_SQR_PAR_OPEN, Literal: "["}
+	case ']':
+		tok = Token{Type: TOKEN_SQR_PAR_CLS, Literal: "]"}
 	case '"', '\'':
 		tok.Type = TOKEN_STRING
 		tok.Literal = l.readString(l.ch)

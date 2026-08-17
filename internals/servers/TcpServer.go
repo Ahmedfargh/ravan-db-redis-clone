@@ -23,19 +23,22 @@ func NewTcpServer(wp *workers.WorkerPool, port int) *TcpServer {
 	}
 }
 
-func (tcp_server *TcpServer) initatServer() {
+func (tcp_server *TcpServer) InitiateServer() error {
 	address := fmt.Sprintf("127.0.0.1:%d", tcp_server.port)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to bind TCP listener on %s: %w", address, err)
 	}
 	tcp_server.listener = listener
-	fmt.Println("Server initiated successfully on address:", listener.Addr())
-	fmt.Printf("Worker Pool active: %d worker goroutines listening on query queue\n", tcp_server.workerPool.WorkerCount)
+	fmt.Printf("\033[1;32m[SERVER]\033[0m Server initiated successfully on address: %s\n", listener.Addr())
+	fmt.Printf("\033[1;33m[WORKERS]\033[0m Worker Pool active: %d worker goroutines listening on query queue\n", tcp_server.workerPool.WorkerCount)
+	return nil
 }
 
-func (tcp_server *TcpServer) HandleConnections() {
-	tcp_server.initatServer()
+func (tcp_server *TcpServer) HandleConnections() error {
+	if err := tcp_server.InitiateServer(); err != nil {
+		return err
+	}
 	tcp_handler := tcp_connection_handler.NewTcpConnectionHandler(tcp_server.workerPool)
 
 	for {

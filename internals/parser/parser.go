@@ -111,8 +111,24 @@ func (p *Parser) parseExpression() (Node, error) {
 	case TOKEN_LPAREN:
 		// Nested command expression like (GET key)
 		return p.ParseCommand()
-	//case TOKEN_SQR_PAR_OPEN:
-
+	case TOKEN_SQR_PAR_OPEN:
+		p.nextToken()
+		list := &ListLiteral{}
+		for {
+			tok := p.curToken()
+			if tok.Type == TOKEN_EOF || tok.Type == TOKEN_SQR_PAR_CLS {
+				break
+			}
+			node, err := p.parseExpression()
+			if err != nil {
+				return nil, err
+			}
+			list.Values = append(list.Values, node)
+		}
+		if p.curToken().Type == TOKEN_SQR_PAR_CLS {
+			p.nextToken()
+		}
+		return list, nil
 	case TOKEN_RPAREN, TOKEN_EOF:
 		return nil, nil
 

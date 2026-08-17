@@ -29,7 +29,7 @@ type ListLiteral struct {
 	Values []Node
 }
 
-func (ll *ListLiteral) string() string {
+func (ll *ListLiteral) String() string {
 	var argsStr []string
 	for _, arg := range ll.Values {
 		argsStr = append(argsStr, arg.String())

@@ -57,7 +57,18 @@ func (e *Evaluator) Evaluate(node parser.Node) (string, error) {
 			return "", err
 		}
 		return res, nil
-
+	case *parser.ListLiteral:
+		var list_items []string
+		for _, list_item := range n.Values {
+			val, err := e.Evaluate(list_item)
+			if err != nil {
+				return "", err
+			}
+			// Trim trailing newline when nested result is passed as argument
+			val = strings.TrimSuffix(val, "\n")
+			list_items = append(list_items, val)
+		}
+		return fmt.Sprintf("[%s]", strings.Join(list_items, " ")), nil
 	default:
 		return "", fmt.Errorf("unknown AST node type: %T", node)
 	}

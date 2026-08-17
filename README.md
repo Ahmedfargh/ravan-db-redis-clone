@@ -1,20 +1,42 @@
 # Raven DB - Redis Clone in Go
 
-**Raven DB** is a high-performance in-memory key-value database engine written in Go. It features a **configurable worker pool architecture**, **goroutine query channels**, **thread-safe data storage**, **Cobra & Viper CLI/Config management**, and a **dynamic programming-language-style AST Command Parser & Evaluator Engine**.
+```text
+                  /\
+                 /  \
+                / /  \
+               | (o)  |======>
+                \    /
+               /      \
+              /  /\    \
+             /  /  \    \
+            /  /    \    \
+           /  /      \    \
+          |  |        |    |
+          |__|        |____|
+       ========================
+            R A V E N  D B
+  High Performance In-Memory Store
+```
+
+**Raven DB** is a high-performance in-memory key-value database engine written in Go. It features a **configurable worker pool architecture**, **goroutine query channels**, **thread-safe data storage**, **Cobra & Viper CLI/Config management**, **interactive REPL & CLI subcommands**, and a **dynamic programming-language-style AST Command Parser & Evaluator Engine** supporting list literals and nested command expressions.
 
 ---
 
 ## 🌟 Architectural Features
 
-* **Configurable Worker Pool Architecture:** Client TCP connections submit raw query jobs to a buffered `JobQueue`. Worker count is fully configurable via CLI flags, environment variables, or config files (default: 4 workers).
+* **Configurable Worker Pool Architecture:** Client TCP connections submit raw query jobs to a buffered `JobQueue`. Worker count is fully configurable via Cobra CLI flags, environment variables, or config files (default: 4 workers).
 * **Per-Query Goroutine Response Channels:** Each query contains a per-request response channel (`chan Response`), ensuring strict isolation and response routing back to the client TCP connection.
 * **Thread-Safe Storage Engine:** Memory operations are guarded by fine-grained `sync.RWMutex` locks, preventing data races across concurrent workers.
+* **Cobra & Viper CLI System**:
+  * **Server (`ravendb`)**: Supports `start`, `version`, and flags (`-w`/`--workers`, `-p`/`--port`, `-q`/`--queue`, `-c`/`--config`).
+  * **Client (`raven-cli`)**: Supports interactive REPL mode, single-command execution mode (`raven-cli exec`), `ping`, `version`, and host/port flags (`-H`/`--host`, `-p`/`--port`).
 * **Struct-bound AST Lexer, Parser & Evaluator:** Uses object-oriented `Lexer`, `Parser`, and `Evaluator` structs capable of parsing:
-  - Quoted strings with spaces: `SET title "Raven Database Engine"`
-  - Nested command expressions: `SET backup (GET title)`
-  - Number & String literals
+  * Quoted strings with spaces: `SET title "Raven Database Engine"`
+  * Nested command expressions: `SET backup (GET title)`
+  * List Literals & Brackets: `SET tags [ "server" (GET env) 8080 ]`
+  * Number & String literals
 * **Interface-based Command System:** Commands implement a clean `Command` interface (`type Command interface { Execute(args []string) (string, error) }`), each residing in its own modular file inside `internals/commands/`.
-* **Cobra & Viper CLI Configuration:** Fully supports configuration via **CLI flags**, **Environment variables** (`RAVEN_WORKERS`, `RAVEN_PORT`, `RAVEN_QUEUE`), and **Config Files** (`config.yaml`).
+* **Rich Colorized CLI Visualization**: Interactive REPL features ANSI colorized status outputs (bold green `OK`, bold yellow `(integer) N`, dim gray `(nil)`, bold red `ERR`), multi-line array item numbering, and a custom Raven Bird ASCII logo.
 
 ---
 
@@ -26,7 +48,7 @@ graph TD
     ConnHandler -->|Job{Query, ResponseChan}| JobQueue["Configurable Worker Job Queue"]
     JobQueue --> Worker["Worker (1 of N Goroutines)"]
     Worker --> Lexer["Lexer.Tokenize()"]
-    Lexer --> Parser["Parser.Parse() (CommandExpr)"]
+    Lexer --> Parser["Parser.Parse() (CommandExpr / ListLiteral)"]
     Parser --> Evaluator["Evaluator.EvaluateQuery()"]
     Evaluator <--> Registry["Dynamic Command Registry"]
     Registry <--> DataStore["Thread-Safe DataStore (sync.RWMutex)"]
@@ -58,7 +80,7 @@ graph TD
 
 ## 🚀 Dynamic Language Syntax Examples
 
-### Quoted Strings
+### 1. Quoted Strings
 ```text
 raven> SET greeting "Hello World from Raven DB"
 OK
@@ -66,7 +88,7 @@ raven> GET greeting
 Hello World from Raven DB
 ```
 
-### Nested Sub-Command Expressions
+### 2. Nested Sub-Command Expressions
 Dynamic sub-expressions inside parentheses `(...)` evaluate recursively first and pass results into outer commands:
 ```text
 raven> SET default_role "Administrator"
@@ -75,6 +97,17 @@ raven> SET user_role (GET default_role)
 OK
 raven> GET user_role
 Administrator
+```
+
+### 3. List Literals with Nested Sub-Commands
+List literals `[...]` parse square brackets and recursively evaluate nested expressions:
+```text
+raven> SET env "production"
+OK
+raven> SET server_config [ "server_v1" (GET env) 8080 ]
+OK
+raven> GET server_config
+[server_v1 production 8080]
 ```
 
 ---
@@ -114,39 +147,52 @@ go build -o ravendb ./cmd/database
 go build -o raven-cli ./cmd/cli
 ```
 
-### 2. Start Raven DB Server
+### 2. Start Raven DB Server (`ravendb`)
 Launch with default settings (4 workers, port 7777, queue size 100):
 ```bash
-./ravendb
+./ravendb start
 ```
 
-Launch with custom flags:
+Launch with custom Cobra CLI flags:
 ```bash
-./ravendb -w 8 -p 7777 -q 200
+./ravendb start -w 8 -p 7778 -q 200
 ```
 
 Launch using environment variables:
 ```bash
-RAVEN_WORKERS=16 RAVEN_PORT=8888 ./ravendb
+RAVEN_WORKERS=16 RAVEN_PORT=8888 ./ravendb start
 ```
 
 Launch using a configuration file:
 ```bash
-./ravendb --config config.example.yaml
+./ravendb start --config config.example.yaml
 ```
 
-### 3. Connect via Raven CLI
+### 3. Connect via Raven CLI (`raven-cli`)
+Start interactive REPL mode:
 ```bash
 ./raven-cli
-# Or connect to a custom port
-./raven-cli -p 8888
+# Or connect to custom host/port
+./raven-cli -H 127.0.0.1 -p 7778
+```
+
+Execute a single command directly:
+```bash
+./raven-cli exec "SET title 'Raven DB'"
+./raven-cli exec "GET title"
+./raven-cli ping
 ```
 
 ---
 
 ## 🧪 Running Unit & Race Detector Tests
 
-Run the full test suite with Go's data race detector:
+Run the complete unit and feature test suite across all packages:
+```bash
+go test -count=1 -v ./...
+```
+
+RunWith Go's data race detector:
 ```bash
 go test -v -race ./...
 ```

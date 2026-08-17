@@ -56,6 +56,34 @@ func TestEvaluatorNestedCommands(t *testing.T) {
 	}
 }
 
+func TestEvaluatorListLiteralWithNestedCommand(t *testing.T) {
+	database.InitiatDataStore()
+	eval := NewEvaluator(nil)
+
+	// Pre-populate data
+	eval.EvaluateQuery(`SET env "production"`)
+
+	// Evaluate command with list literal containing a nested command
+	// SET tags [ "server" (GET env) 8080 ]
+	res, err := eval.EvaluateQuery(`SET tags [ "server" (GET env) 8080 ]`)
+	if err != nil {
+		t.Fatalf("Unexpected error in list query: %v", err)
+	}
+	if res != "OK\n" {
+		t.Fatalf("Expected OK\\n, got %q", res)
+	}
+
+	// Check saved value
+	res, err = eval.EvaluateQuery(`GET tags`)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	expected := "[server production 8080]\n"
+	if res != expected {
+		t.Fatalf("Expected %q, got %q", expected, res)
+	}
+}
+
 func TestDynamicCommandRegistration(t *testing.T) {
 	eval := NewEvaluator(nil)
 
