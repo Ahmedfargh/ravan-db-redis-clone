@@ -44,16 +44,16 @@
 
 ```mermaid
 graph TD
-    Client["Client (raven-cli / TCP Socket)"] -->|"Query Line Stream"| ConnHandler["TcpIpConnectionHandler"]
-    ConnHandler -->|"Job (Query, ResponseChan)"| JobQueue["Configurable Worker Job Queue"]
-    JobQueue --> Worker["Worker (1 of N Goroutines)"]
-    Worker --> Lexer["Lexer.Tokenize()"]
-    Lexer --> Parser["Parser.Parse()"]
-    Parser --> Evaluator["Evaluator.EvaluateQuery()"]
+    Client["Client TCP Socket"] --> ConnHandler["TcpIpConnectionHandler"]
+    ConnHandler --> JobQueue["Configurable Worker Job Queue"]
+    JobQueue --> Worker["Worker Goroutines"]
+    Worker --> Lexer["Lexer Tokenize"]
+    Lexer --> Parser["Parser Parse"]
+    Parser --> Evaluator["Evaluator EvaluateQuery"]
     Evaluator --> Registry["Dynamic Command Registry"]
-    Registry --> DataStore["Thread-Safe DataStore (sync.RWMutex)"]
-    Evaluator -->|"Result String"| ConnHandler
-    ConnHandler -->|"Response Bytes"| Client
+    Registry --> DataStore["Thread-Safe DataStore"]
+    Evaluator --> ConnHandler
+    ConnHandler --> Client
 ```
 
 ---
