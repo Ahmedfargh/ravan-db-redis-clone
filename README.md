@@ -18,7 +18,9 @@
   High Performance In-Memory Store
 ```
 
-**Raven DB** is a high-performance in-memory key-value database engine written in Go. It features a **configurable worker pool architecture**, **goroutine query channels**, **thread-safe data storage**, **Cobra & Viper CLI/Config management**, **interactive REPL & CLI subcommands**, and a **dynamic programming-language-style AST Command Parser & Evaluator Engine** supporting list literals and nested command expressions.
+**Raven DB** is a high-performance in-memory key-value database engine written in Go. It features a **configurable worker pool architecture**, **goroutine query channels**, **thread-safe data storage**, **Cobra & Viper CLI/Config management**, **interactive REPL & CLI subcommands**, and the **Raven Query Language (RQL)**—a dynamic AST Command Parser & Evaluator Engine supporting list literals and nested command expressions.
+
+> 📖 **Language Specification**: Read the complete [Raven Query Language (RQL) Specification](file:///home/ahmed/golang/redis-clone/docs/RQL.md).
 
 ---
 
