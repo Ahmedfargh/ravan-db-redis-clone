@@ -78,6 +78,7 @@ graph TD
 | `MGET` | `MGET key1 key2 ...` | Gets multiple key values | `MGET k1 k2` |
 | `MSET` | `MSET k1 v1 k2 v2 ...` | Sets multiple key-value pairs | `MSET k1 "v1" k2 "v2"` |
 | `VALUEBYINDEX` | `VALUEBYINDEX key index` | Retrieves character or list element at 0-based index (expects StringLiteral or ListLiteral) | `VALUEBYINDEX list_key 0` |
+| `UPDATEINDEX` | `UPDATEINDEX key index value` | Updates character or list element at 0-based index with the new value | `UPDATEINDEX list_key 0 "banana"` |
 
 ---
 
@@ -113,7 +114,7 @@ raven> GET server_config
 [server_v1 production 8080]
 ```
 
-### 4. Value By Index Access
+### 4. Value By Index Access & Update
 The `VALUEBYINDEX` command retrieves elements at a specified 0-based index from stored structural AST literal values (e.g., `StringLiteral` or `ListLiteral`):
 ```text
 # Querying a ListLiteral element
@@ -123,6 +124,17 @@ raven> VALUEBYINDEX config_list 1
 # Querying a StringLiteral character
 raven> VALUEBYINDEX greeting_literal 0
 "R"
+```
+
+The `UPDATEINDEX` command updates elements or characters at a specified 0-based index:
+```text
+# Updating a ListLiteral element
+raven> UPDATEINDEX config_list 1 "staging"
+OK
+
+# Updating a StringLiteral character
+raven> UPDATEINDEX greeting_literal 0 "M"
+OK
 ```
 
 ---

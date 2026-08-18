@@ -161,3 +161,4 @@ stateDiagram-v2
 | `MGET` | `MGET <key1> <key2> ...` | Retrieves multiple keys |
 | `MSET` | `MSET <k1> <v1> <k2> <v2> ...` | Sets multiple key-value pairs |
 | `VALUEBYINDEX` | `VALUEBYINDEX <key> <index>` | Retrieves element at the specified 0-based index from stored `StringLiteral` or `ListLiteral` |
+| `UPDATEINDEX` | `UPDATEINDEX <key> <index> <value>` | Updates element or character at the specified 0-based index with the new value |

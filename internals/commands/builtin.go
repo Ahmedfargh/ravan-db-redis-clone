@@ -15,4 +15,5 @@ func (r *CommandRegistry) registerDefaults() {
 	r.Register("MSET", &MsetCommand{})
 	r.Register("ECHO", &EchoCommand{})
 	r.Register("VALUEBYINDEX", &ValueByIndex{})
+	r.Register("UPDATEINDEX", &UpdateListIndexValue{})
 }
