@@ -77,6 +77,7 @@ graph TD
 | `DECR` | `DECR key` | Decrements integer key by 1 | `DECR counter` -> `(integer) 0` |
 | `MGET` | `MGET key1 key2 ...` | Gets multiple key values | `MGET k1 k2` |
 | `MSET` | `MSET k1 v1 k2 v2 ...` | Sets multiple key-value pairs | `MSET k1 "v1" k2 "v2"` |
+| `VALUEBYINDEX` | `VALUEBYINDEX key index` | Retrieves character or list element at 0-based index (expects StringLiteral or ListLiteral) | `VALUEBYINDEX list_key 0` |
 
 ---
 
@@ -110,6 +111,18 @@ raven> SET server_config [ "server_v1" (GET env) 8080 ]
 OK
 raven> GET server_config
 [server_v1 production 8080]
+```
+
+### 4. Value By Index Access
+The `VALUEBYINDEX` command retrieves elements at a specified 0-based index from stored structural AST literal values (e.g., `StringLiteral` or `ListLiteral`):
+```text
+# Querying a ListLiteral element
+raven> VALUEBYINDEX config_list 1
+"production"
+
+# Querying a StringLiteral character
+raven> VALUEBYINDEX greeting_literal 0
+"R"
 ```
 
 ---

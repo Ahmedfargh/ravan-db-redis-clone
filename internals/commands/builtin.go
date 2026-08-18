@@ -14,4 +14,5 @@ func (r *CommandRegistry) registerDefaults() {
 	r.Register("MGET", &MgetCommand{})
 	r.Register("MSET", &MsetCommand{})
 	r.Register("ECHO", &EchoCommand{})
+	r.Register("VALUEBYINDEX", &ValueByIndex{})
 }

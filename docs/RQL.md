@@ -160,3 +160,4 @@ stateDiagram-v2
 | `DECR` | `DECR <key>` | Decrements numeric value by 1 |
 | `MGET` | `MGET <key1> <key2> ...` | Retrieves multiple keys |
 | `MSET` | `MSET <k1> <v1> <k2> <v2> ...` | Sets multiple key-value pairs |
+| `VALUEBYINDEX` | `VALUEBYINDEX <key> <index>` | Retrieves element at the specified 0-based index from stored `StringLiteral` or `ListLiteral` |
