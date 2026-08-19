@@ -38,7 +38,10 @@
   * List Literals & Brackets: `SET tags [ "server" (GET env) 8080 ]`
   * Number & String literals
 * **Interface-based Command System:** Commands implement a clean `Command` interface (`type Command interface { Execute(args []string) (string, error) }`), each residing in its own modular file inside `internals/commands/`.
-* **Rich Colorized CLI Visualization**: Interactive REPL features ANSI colorized status outputs (bold green `OK`, bold yellow `(integer) N`, dim gray `(nil)`, bold red `ERR`), multi-line array item numbering, and a custom Raven Bird ASCII logo.
+* **Multi-Stage RQL Error Tracing & Diagnostics:** End-to-end diagnostic tracing across Lexer, Parser, and AST Evaluator stages:
+  * **Lexer / Parser Syntax Diagnostics**: Emits exact `line:col` locations, error explanations, visual code snippets with caret pointers (`^`), and hints.
+  * **Hierarchical AST Evaluation Stack Trace**: Step-by-step call stack tracing across nested sub-expressions `(...)` and list literals `[...]` explaining *what happened* during evaluation failures.
+* **Rich Colorized CLI Visualization**: Interactive REPL features ANSI colorized status outputs (bold green `OK`, bold yellow `(integer) N`, dim gray `(nil)`, bold red `ERR` and `[RQL ...]` diagnostics, magenta stack traces, yellow carets), multi-line array item numbering, and a custom Raven Bird ASCII logo.
 
 ---
 
@@ -135,6 +138,43 @@ OK
 # Updating a StringLiteral character
 raven> UPDATEINDEX greeting_literal 0 "M"
 OK
+```
+
+---
+
+## 🔍 RQL Error Tracing & Diagnostics
+
+Raven DB includes comprehensive multi-stage error tracing with syntax pointers and hierarchical runtime execution stack traces:
+
+### 1. Lexer & Parser Syntax Diagnostics
+Pinpoints the exact `line` and `column` with visual caret (`^`) pointers and resolution hints:
+```text
+raven> SET tags [ "server" 8080
+[RQL Syntax Error] at line 1, col 10: unclosed list bracket '[' opened at col 10 (missing closing ']')
+    SET tags [ "server" 8080
+             ^
+  Hint: close list literal with ']'
+```
+
+### 2. Unterminated String Literals
+```text
+raven> SET key "unterminated string
+[RQL Lexer Error] at line 1, col 9: unterminated string literal starting with quote " at col 9 (missing closing quote)
+    SET key "unterminated string
+            ^
+  Hint: check for unescaped quotes or invalid special characters
+```
+
+### 3. Hierarchical Runtime AST Execution Trace
+Tracks every step through nested sub-queries `(...)` and lists `[...]` down to the root cause:
+```text
+raven> SET tags [ "server" (GET) 8080 ]
+[RQL Runtime Error] Execution failed during query evaluation:
+  ├─ Step 1: Evaluating argument 2 of command 'SET' -> [ "server" (GET) 8080 ]
+  ├─ Step 2: Evaluating element 2 in list literal -> (GET)
+  └─ Step 3: Executing command handler 'GET' -> (GET)
+  Cause: ERR wrong number of arguments for 'get' command
+  Hint: check the required argument count for this command
 ```
 
 ---

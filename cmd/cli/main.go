@@ -137,9 +137,25 @@ func formatResponse(response string) string {
 		return fmt.Sprintf("%s%s%s", colorYellow, trimmed, colorReset)
 	}
 
-	// Errors
-	if strings.HasPrefix(trimmed, "ERR") || strings.HasPrefix(trimmed, "(error)") {
-		return fmt.Sprintf("%s%s%s", colorRed, trimmed, colorReset)
+	// Errors (RQL diagnostic traces or standard Redis errors)
+	if strings.HasPrefix(trimmed, "[RQL ") || strings.HasPrefix(trimmed, "ERR") || strings.HasPrefix(trimmed, "(error)") {
+		lines := strings.Split(trimmed, "\n")
+		var formatted []string
+		for _, line := range lines {
+			trimmedLine := strings.TrimSpace(line)
+			if strings.HasPrefix(line, "[RQL ") || strings.HasPrefix(line, "  Cause:") || strings.HasPrefix(line, "ERR") || strings.HasPrefix(line, "(error)") {
+				formatted = append(formatted, fmt.Sprintf("%s%s%s", colorRed, line, colorReset))
+			} else if strings.HasPrefix(trimmedLine, "^") {
+				formatted = append(formatted, fmt.Sprintf("%s%s%s", colorYellow, line, colorReset))
+			} else if strings.HasPrefix(trimmedLine, "Hint:") {
+				formatted = append(formatted, fmt.Sprintf("%s%s%s", colorYellow, line, colorReset))
+			} else if strings.HasPrefix(line, "  ├─") || strings.HasPrefix(line, "  └─") {
+				formatted = append(formatted, fmt.Sprintf("%s%s%s", colorMagenta, line, colorReset))
+			} else {
+				formatted = append(formatted, fmt.Sprintf("%s%s%s", colorRed, line, colorReset))
+			}
+		}
+		return strings.Join(formatted, "\n")
 	}
 
 	// Multi-line list/array responses
@@ -157,6 +173,25 @@ func formatResponse(response string) string {
 	}
 
 	return fmt.Sprintf("%s%s%s", colorCyan, trimmed, colorReset)
+}
+
+func readServerResponse(connReader *bufio.Reader) (string, error) {
+	firstLine, err := connReader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+
+	var sb strings.Builder
+	sb.WriteString(firstLine)
+
+	for connReader.Buffered() > 0 {
+		line, err := connReader.ReadString('\n')
+		sb.WriteString(line)
+		if err != nil {
+			break
+		}
+	}
+	return sb.String(), nil
 }
 
 func connectServer() (net.Conn, *bufio.Reader, error) {
@@ -190,7 +225,7 @@ func runSingleCommand(query string) {
 		os.Exit(1)
 	}
 
-	response, err := connReader.ReadString('\n')
+	response, err := readServerResponse(connReader)
 	if err != nil {
 		fmt.Printf("%s[ERROR]%s Server closed connection: %v\n", colorRed, colorReset, err)
 		os.Exit(1)
@@ -245,7 +280,7 @@ func runREPL() {
 		}
 
 		// Read response
-		response, err := connReader.ReadString('\n')
+		response, err := readServerResponse(connReader)
 		if err != nil {
 			fmt.Printf("%s[ERROR]%s Server connection lost: %v\n", colorRed, colorReset, err)
 			break

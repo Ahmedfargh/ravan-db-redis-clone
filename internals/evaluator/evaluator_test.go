@@ -100,3 +100,52 @@ func TestDynamicCommandRegistration(t *testing.T) {
 		t.Fatalf("Expected 'HELLO RAVEN ENGINE\\n', got %q", res)
 	}
 }
+
+func TestEvaluatorUnknownCommandTrace(t *testing.T) {
+	eval := NewEvaluator(nil)
+
+	_, err := eval.EvaluateQuery(`SET role (UNKNOWN_CMD key)`)
+	if err == nil {
+		t.Fatalf("Expected error for unknown command in subquery, got nil")
+	}
+
+	evalErr, ok := err.(*EvalError)
+	if !ok {
+		t.Fatalf("Expected *EvalError, got %T: %v", err, err)
+	}
+
+	errStr := evalErr.Error()
+	if !strings.Contains(errStr, "[RQL Runtime Error]") {
+		t.Errorf("Expected [RQL Runtime Error] banner, got:\n%s", errStr)
+	}
+	if !strings.Contains(errStr, "UNKNOWN_CMD") {
+		t.Errorf("Expected UNKNOWN_CMD in trace, got:\n%s", errStr)
+	}
+	if !strings.Contains(errStr, "Step 1") || !strings.Contains(errStr, "Step 2") {
+		t.Errorf("Expected multi-step evaluation trace, got:\n%s", errStr)
+	}
+}
+
+func TestEvaluatorListNestedCommandTrace(t *testing.T) {
+	eval := NewEvaluator(nil)
+
+	// Sub-command inside list literal missing required arguments
+	_, err := eval.EvaluateQuery(`SET tags [ "server" (GET) 8080 ]`)
+	if err == nil {
+		t.Fatalf("Expected error for missing arguments in list subquery, got nil")
+	}
+
+	evalErr, ok := err.(*EvalError)
+	if !ok {
+		t.Fatalf("Expected *EvalError, got %T: %v", err, err)
+	}
+
+	errStr := evalErr.Error()
+	if !strings.Contains(errStr, "list literal") {
+		t.Errorf("Expected list literal step in trace, got:\n%s", errStr)
+	}
+	if !strings.Contains(errStr, "wrong number of arguments") {
+		t.Errorf("Expected wrong number of arguments cause, got:\n%s", errStr)
+	}
+}
+

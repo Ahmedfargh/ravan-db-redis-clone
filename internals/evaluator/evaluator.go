@@ -29,7 +29,14 @@ func (e *Evaluator) EvaluateQuery(query string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return e.Evaluate(cmdExpr)
+	res, err := e.Evaluate(cmdExpr)
+	if err != nil {
+		if evalErr, ok := err.(*EvalError); ok {
+			evalErr.Query = query
+		}
+		return "", err
+	}
+	return res, nil
 }
 
 func (e *Evaluator) Evaluate(node parser.Node) (string, error) {
@@ -42,10 +49,10 @@ func (e *Evaluator) Evaluate(node parser.Node) (string, error) {
 
 	case *parser.CommandExpr:
 		var evaluatedArgs []string
-		for _, argNode := range n.Args {
+		for i, argNode := range n.Args {
 			val, err := e.Evaluate(argNode)
 			if err != nil {
-				return "", err
+				return "", wrapWithFrame(err, fmt.Sprintf("Evaluating argument %d of command '%s'", i+1, n.CommandName), argNode.String())
 			}
 			// Trim trailing newline when nested result is passed as argument
 			val = strings.TrimSuffix(val, "\n")
@@ -54,23 +61,25 @@ func (e *Evaluator) Evaluate(node parser.Node) (string, error) {
 
 		res, err := e.registry.Execute(n.CommandName, evaluatedArgs)
 		if err != nil {
-			return "", err
+			return "", wrapWithFrame(err, fmt.Sprintf("Executing command handler '%s'", n.CommandName), n.String())
 		}
 		return res, nil
+
 	case *parser.ListLiteral:
 		var list_items []string
-		for _, list_item := range n.Values {
+		for i, list_item := range n.Values {
 			val, err := e.Evaluate(list_item)
 			if err != nil {
-				return "", err
+				return "", wrapWithFrame(err, fmt.Sprintf("Evaluating element %d in list literal", i+1), list_item.String())
 			}
 			// Trim trailing newline when nested result is passed as argument
 			val = strings.TrimSuffix(val, "\n")
 			list_items = append(list_items, val)
 		}
 		return fmt.Sprintf("[%s]", strings.Join(list_items, " ")), nil
+
 	default:
-		return "", fmt.Errorf("unknown AST node type: %T", node)
+		return "", wrapWithFrame(fmt.Errorf("unknown AST node type: %T", node), "Evaluating AST node", "")
 	}
 }
 
@@ -83,3 +92,4 @@ func EvaluateQuery(query string) (string, error) {
 func Evaluate(node parser.Node) (string, error) {
 	return DefaultEvaluator.Evaluate(node)
 }
+

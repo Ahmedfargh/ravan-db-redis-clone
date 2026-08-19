@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -145,3 +146,85 @@ func TestParserEmptyListLiteral(t *testing.T) {
 		t.Fatalf("Expected 0 elements, got %d", len(listNode.Values))
 	}
 }
+
+func TestLexerUnterminatedStringError(t *testing.T) {
+	input := `SET key "unterminated string`
+	_, err := NewLexer(input).Tokenize()
+	if err == nil {
+		t.Fatalf("Expected error for unterminated string, got nil")
+	}
+
+	syntaxErr, ok := err.(*RqlSyntaxError)
+	if !ok {
+		t.Fatalf("Expected *RqlSyntaxError, got %T: %v", err, err)
+	}
+
+	if syntaxErr.Phase != "Lexer" {
+		t.Errorf("Expected Lexer phase, got %s", syntaxErr.Phase)
+	}
+
+	errStr := err.Error()
+	if !strings.Contains(errStr, "[RQL Lexer Error]") {
+		t.Errorf("Expected [RQL Lexer Error] banner, got:\n%s", errStr)
+	}
+	if !strings.Contains(errStr, "^") {
+		t.Errorf("Expected caret pointer in error output, got:\n%s", errStr)
+	}
+}
+
+func TestParserUnclosedParenthesisError(t *testing.T) {
+	input := `SET role (GET default_role`
+	_, err := ParseQuery(input)
+	if err == nil {
+		t.Fatalf("Expected error for unclosed parenthesis, got nil")
+	}
+
+	syntaxErr, ok := err.(*RqlSyntaxError)
+	if !ok {
+		t.Fatalf("Expected *RqlSyntaxError, got %T: %v", err, err)
+	}
+
+	if !strings.Contains(syntaxErr.Message, "unclosed parenthesis") {
+		t.Errorf("Expected 'unclosed parenthesis' message, got: %s", syntaxErr.Message)
+	}
+
+	errStr := err.Error()
+	if !strings.Contains(errStr, "[RQL Parser Error]") {
+		t.Errorf("Expected [RQL Parser Error] banner, got:\n%s", errStr)
+	}
+}
+
+func TestParserUnclosedBracketError(t *testing.T) {
+	input := `SET tags [ "server" 8080`
+	_, err := ParseQuery(input)
+	if err == nil {
+		t.Fatalf("Expected error for unclosed list bracket, got nil")
+	}
+
+	syntaxErr, ok := err.(*RqlSyntaxError)
+	if !ok {
+		t.Fatalf("Expected *RqlSyntaxError, got %T: %v", err, err)
+	}
+
+	if !strings.Contains(syntaxErr.Message, "unclosed list bracket") {
+		t.Errorf("Expected 'unclosed list bracket' message, got: %s", syntaxErr.Message)
+	}
+}
+
+func TestParserTrailingTokensError(t *testing.T) {
+	input := `(GET key) extra_unexpected_token`
+	_, err := ParseQuery(input)
+	if err == nil {
+		t.Fatalf("Expected error for trailing token, got nil")
+	}
+
+	syntaxErr, ok := err.(*RqlSyntaxError)
+	if !ok {
+		t.Fatalf("Expected *RqlSyntaxError, got %T: %v", err, err)
+	}
+
+	if !strings.Contains(syntaxErr.Message, "unexpected trailing token") {
+		t.Errorf("Expected trailing token error, got: %s", syntaxErr.Message)
+	}
+}
+
