@@ -181,6 +181,8 @@ stateDiagram-v2
 | `MSET` | `MSET <k1> <v1> <k2> <v2> ...` | Sets multiple key-value pairs |
 | `VALUEBYINDEX` | `VALUEBYINDEX <key> <index>` | Retrieves element at the specified 0-based index from stored `StringLiteral` or `ListLiteral` |
 | `UPDATEINDEX` | `UPDATEINDEX <key> <index> <value>` | Updates element or character at the specified 0-based index with the new value |
+| `DELINDEX` | `DELINDEX <key> <index>` | Deletes element or character at the specified 0-based index from stored `StringLiteral` or `ListLiteral` |
+| `DELFROMLIST` | `DELFROMLIST <key> <item1> [item2 ...]` | Deletes given items/elements from stored `StringLiteral` or `ListLiteral` |
 
 ---
 

@@ -82,6 +82,8 @@ graph TD
 | `MSET` | `MSET k1 v1 k2 v2 ...` | Sets multiple key-value pairs | `MSET k1 "v1" k2 "v2"` |
 | `VALUEBYINDEX` | `VALUEBYINDEX key index` | Retrieves character or list element at 0-based index (expects StringLiteral or ListLiteral) | `VALUEBYINDEX list_key 0` |
 | `UPDATEINDEX` | `UPDATEINDEX key index value` | Updates character or list element at 0-based index with the new value | `UPDATEINDEX list_key 0 "banana"` |
+| `DELINDEX` | `DELINDEX key index` | Deletes character or list element at 0-based index | `DELINDEX list_key 0` |
+| `DELFROMLIST` | `DELFROMLIST key item [item2 ...]` | Deletes given items/elements from a list or string | `DELFROMLIST list_key "banana"` |
 
 ---
 
@@ -117,7 +119,7 @@ raven> GET server_config
 [server_v1 production 8080]
 ```
 
-### 4. Value By Index Access & Update
+### 4. Value By Index Access, Update & Deletion
 The `VALUEBYINDEX` command retrieves elements at a specified 0-based index from stored structural AST literal values (e.g., `StringLiteral` or `ListLiteral`):
 ```text
 # Querying a ListLiteral element
@@ -137,6 +139,17 @@ OK
 
 # Updating a StringLiteral character
 raven> UPDATEINDEX greeting_literal 0 "M"
+OK
+```
+
+The `DELINDEX` (or `DELETEINDEX`) command deletes elements or characters at a specified 0-based index:
+```text
+# Deleting a ListLiteral element
+raven> DELINDEX config_list 1
+OK
+
+# Deleting a StringLiteral character
+raven> DELINDEX greeting_literal 0
 OK
 ```
 

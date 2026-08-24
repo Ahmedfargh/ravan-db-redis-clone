@@ -10,8 +10,7 @@ import (
 
 type TcpIpConnectionHandler struct {
 	workerPool *workers.WorkerPool
-	Ttl        uint32 //in mellisecends
-	Conn       net.Conn
+	Ttl        uint32 //in milliseconds
 }
 
 func NewTcpConnectionHandler(wp *workers.WorkerPool) *TcpIpConnectionHandler {
@@ -23,7 +22,6 @@ func NewTcpConnectionHandler(wp *workers.WorkerPool) *TcpIpConnectionHandler {
 
 func (tcp_ip_handler *TcpIpConnectionHandler) HandleConnection(conn net.Conn) {
 	defer conn.Close()
-	tcp_ip_handler.Conn = conn
 	// Greeting message to connected client
 	conn.Write([]byte("Connected to Raven DB Server (Dynamic AST Parser & 4-Worker Engine)\n"))
 

@@ -2,6 +2,7 @@ package database
 
 import (
 	"sync"
+	"time"
 )
 
 type DataStore struct {
@@ -68,4 +69,20 @@ func (data_store *DataStore) DelValue(key string) bool {
 		return true
 	}
 	return false
+}
+
+// GetKeys safely returns all active non-expired keys under shared RLock
+func (data_store *DataStore) GetKeys() []string {
+	data_store.mu.RLock()
+	defer data_store.mu.RUnlock()
+
+	var keys []string
+	now := uint64(time.Now().Unix())
+	for k, v := range data_store.Data {
+		if v.Ttl > 0 && now > v.Ttl {
+			continue
+		}
+		keys = append(keys, k)
+	}
+	return keys
 }

@@ -16,4 +16,8 @@ func (r *CommandRegistry) registerDefaults() {
 	r.Register("ECHO", &EchoCommand{})
 	r.Register("VALUEBYINDEX", &ValueByIndex{})
 	r.Register("UPDATEINDEX", &UpdateListIndexValue{})
+	r.Register("DELINDEX", &DeleteValueFromIndex{})
+	r.Register("DELETEINDEX", &DeleteValueFromIndex{})
+	r.Register("DELFROMLIST", &DeleteFromList{})
+	r.Register("DELETEFROMLIST", &DeleteFromList{})
 }
