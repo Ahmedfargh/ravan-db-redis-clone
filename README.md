@@ -153,6 +153,17 @@ raven> DELINDEX greeting_literal 0
 OK
 ```
 
+The `DELFROMLIST` command removes all occurrences of given item(s) from a list or string:
+```text
+# Deleting items from a list
+raven> DELFROMLIST config_list "staging"
+OK
+
+# Deleting characters from a string
+raven> DELFROMLIST greeting_literal "o"
+OK
+```
+
 ---
 
 ## 🔍 RQL Error Tracing & Diagnostics

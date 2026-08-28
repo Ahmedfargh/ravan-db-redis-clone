@@ -85,8 +85,9 @@ Demonstrates the lifecycle of a query request from the client TCP connection thr
       Execute(args []string) (string, error)
   }
   ```
-  Implemented by concrete structs: `PingCommand`, `SetCommand`, `GetCommand`, `DelCommand`, `ExistsCommand`, `KeysCommand`, `ExpireCommand`, `TtlCommand`, `IncrCommand`, `DecrCommand`, `MgetCommand`, `MsetCommand`, `EchoCommand`.
+  Implemented by concrete structs: `PingCommand`, `SetCommand`, `GetCommand`, `DelCommand`, `ExistsCommand`, `KeysCommand`, `ExpireCommand`, `TtlCommand`, `IncrCommand`, `DecrCommand`, `MgetCommand`, `MsetCommand`, `EchoCommand`, `ValueByIndex`, `UpdateListIndexValue`, `DeleteValueFromIndex`, `DelFromList`.
 
 - **`CommandRegistry`**: Holds `map[string]Command` guarded by `sync.RWMutex`. Thread-safe dynamic lookup and registration.
 - **`Evaluator`**: Dependency-injected evaluator executing queries against a `CommandRegistry`.
-- **`DataStore`**: Thread-safe storage engine holding `map[string]*DataValue` guarded by `sync.RWMutex`.
+- **`DataStore`**: Thread-safe storage engine holding `map[string]*DataValue` guarded by `sync.RWMutex` with fine-grained per-value locking.
+- **`Value Types`**: Stored values support primitive strings as well as AST structural nodes (`*parser.StringLiteral`, `*parser.ListLiteral`, `*parser.NumberLiteral`).
