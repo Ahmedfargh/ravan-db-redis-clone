@@ -1,0 +1,22 @@
+# Binaries
+main
+raven-cli
+ravencli
+ravancli
+raven-db
+ravendb
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Config overrides
+config.yaml
+
+# IDE / OS files
+.DS_Store
+.idea/
+.vscode/

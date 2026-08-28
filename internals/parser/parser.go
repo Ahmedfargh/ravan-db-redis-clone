@@ -77,6 +77,26 @@ func ParseQuery(input string) (*CommandExpr, error) {
 	return p.Parse()
 }
 
+// ParseValue parses a string value into an AST Node (ListLiteral or StringLiteral).
+func ParseValue(input string) (Node, error) {
+	trimmed := strings.TrimSpace(input)
+	if strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]") {
+		p, err := NewParserFromInput(trimmed)
+		if err != nil {
+			return &StringLiteral{Value: input}, nil
+		}
+		node, err := p.ParseExpression()
+		if err == nil && node != nil && p.curToken().Type == TOKEN_EOF {
+			return node, nil
+		}
+	}
+	return &StringLiteral{Value: input}, nil
+}
+
+func (p *Parser) ParseExpression() (Node, error) {
+	return p.parseExpression()
+}
+
 func (p *Parser) ParseCommand() (*CommandExpr, error) {
 	cur := p.curToken()
 	if cur.Type == TOKEN_EOF {

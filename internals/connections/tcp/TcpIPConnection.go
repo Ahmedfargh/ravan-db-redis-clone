@@ -43,11 +43,11 @@ func (tcp_ip_handler *TcpIpConnectionHandler) HandleConnection(conn net.Conn) {
 
 		// Wait for response from worker goroutine
 		res := <-resChan
-
 		if res.Err != nil {
-			conn.Write([]byte(fmt.Sprintf("%v\n", res.Err)))
+			conn.Write([]byte(fmt.Sprintf("%v", res.Err)))
 		} else {
 			conn.Write([]byte(res.Result))
+
 		}
 	}
 }

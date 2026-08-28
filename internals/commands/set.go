@@ -2,6 +2,7 @@ package commands
 
 import (
 	"Raven/internals/database"
+	"Raven/internals/parser"
 	"fmt"
 	"strconv"
 	"time"
@@ -24,6 +25,11 @@ func (c *SetCommand) Execute(args []string) (string, error) {
 			}
 		}
 	}
-	database.Data_store.SetValue(key, val, ttl)
+	parsedVal, err := parser.ParseValue(val)
+	if err != nil || parsedVal == nil {
+		database.Data_store.SetValue(key, val, ttl)
+	} else {
+		database.Data_store.SetValue(key, parsedVal, ttl)
+	}
 	return "OK\n", nil
 }

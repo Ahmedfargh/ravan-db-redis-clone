@@ -15,8 +15,8 @@ func TestValueByIndex_Execute_ArgCount(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error for 0 args, got nil")
 	}
-	if res != "ValueByIndex Accept Only two args" {
-		t.Errorf("expected 'ValueByIndex Accept Only two args', got %q", res)
+	if res != "ValueByIndex Accept Only two args\n" {
+		t.Errorf("expected 'ValueByIndex Accept Only two args\\n', got %q", res)
 	}
 
 	// Test with 1 arg
@@ -41,8 +41,8 @@ func TestValueByIndex_Execute_InvalidIndex(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error for non-numeric index, got nil")
 	}
-	if res != "Invalid index format" {
-		t.Errorf("expected 'Invalid index format', got %q", res)
+	if res != "Invalid index format\n" {
+		t.Errorf("expected 'Invalid index format\\n', got %q", res)
 	}
 }
 
@@ -55,8 +55,8 @@ func TestValueByIndex_Execute_NonExistentKey(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error for missing key, got nil")
 	}
-	if res != "value don't exists" {
-		t.Errorf("expected 'value don't exists', got %q", res)
+	if res != "value don't exists\n" {
+		t.Errorf("expected 'value don't exists\\n', got %q", res)
 	}
 }
 
@@ -72,8 +72,8 @@ func TestValueByIndex_Execute_StringLiteral(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res != "R" {
-		t.Errorf("expected 'R', got %q", res)
+	if res != "R\n" {
+		t.Errorf("expected 'R\\n', got %q", res)
 	}
 
 	// Test valid index 4
@@ -81,8 +81,8 @@ func TestValueByIndex_Execute_StringLiteral(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res != "n" {
-		t.Errorf("expected 'n', got %q", res)
+	if res != "n\n" {
+		t.Errorf("expected 'n\\n', got %q", res)
 	}
 
 	// Test out of bounds index (positive)
@@ -90,8 +90,8 @@ func TestValueByIndex_Execute_StringLiteral(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error for out of bounds positive index, got nil")
 	}
-	if res != "Index out of range" {
-		t.Errorf("expected 'Index out of range', got %q", res)
+	if res != "Index out of range\n" {
+		t.Errorf("expected 'Index out of range\\n', got %q", res)
 	}
 
 	// Test out of bounds index (negative)
@@ -99,8 +99,8 @@ func TestValueByIndex_Execute_StringLiteral(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error for out of bounds negative index, got nil")
 	}
-	if res != "Index out of range" {
-		t.Errorf("expected 'Index out of range', got %q", res)
+	if res != "Index out of range\n" {
+		t.Errorf("expected 'Index out of range\\n', got %q", res)
 	}
 }
 
@@ -122,8 +122,8 @@ func TestValueByIndex_Execute_ListLiteral(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res != "apple" {
-		t.Errorf("expected 'apple', got %q", res)
+	if res != "apple\n" {
+		t.Errorf("expected 'apple\\n', got %q", res)
 	}
 
 	// Test valid index 1
@@ -131,8 +131,8 @@ func TestValueByIndex_Execute_ListLiteral(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res != "123" {
-		t.Errorf("expected '123', got %q", res)
+	if res != "123\n" {
+		t.Errorf("expected '123\\n', got %q", res)
 	}
 
 	// Test out of bounds index (positive)
@@ -140,8 +140,8 @@ func TestValueByIndex_Execute_ListLiteral(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error for out of bounds positive index, got nil")
 	}
-	if res != "Index out of range" {
-		t.Errorf("expected 'Index out of range', got %q", res)
+	if res != "Index out of range\n" {
+		t.Errorf("expected 'Index out of range\\n', got %q", res)
 	}
 
 	// Test out of bounds index (negative)
@@ -149,8 +149,8 @@ func TestValueByIndex_Execute_ListLiteral(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error for out of bounds negative index, got nil")
 	}
-	if res != "Index out of range" {
-		t.Errorf("expected 'Index out of range', got %q", res)
+	if res != "Index out of range\n" {
+		t.Errorf("expected 'Index out of range\\n', got %q", res)
 	}
 }
 
@@ -166,8 +166,8 @@ func TestValueByIndex_Execute_UnsupportedType(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error for unsupported type, got nil")
 	}
-	if res != "Element is not a string literal" {
-		t.Errorf("expected 'Element is not a string literal', got %q", res)
+	if res != "Element is not a string literal\n" {
+		t.Errorf("expected 'Element is not a string literal\\n', got %q", res)
 	}
 }
 
@@ -182,7 +182,7 @@ func TestValueByIndex_GlobalRegistry(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected registry error: %v", err)
 	}
-	if res != "v" {
-		t.Errorf("expected 'v', got %q", res)
+	if res != "v\n" {
+		t.Errorf("expected 'v\\n', got %q", res)
 	}
 }

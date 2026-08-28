@@ -78,7 +78,7 @@ func TestEvaluatorListLiteralWithNestedCommand(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
-	expected := "[server production 8080]\n"
+	expected := "[server,production,8080]\n"
 	if res != expected {
 		t.Fatalf("Expected %q, got %q", expected, res)
 	}
@@ -146,6 +146,68 @@ func TestEvaluatorListNestedCommandTrace(t *testing.T) {
 	}
 	if !strings.Contains(errStr, "wrong number of arguments") {
 		t.Errorf("Expected wrong number of arguments cause, got:\n%s", errStr)
+	}
+}
+
+func TestEvaluatorListAndIndexOperationsEndToEnd(t *testing.T) {
+	database.InitiatDataStore()
+	eval := NewEvaluator(nil)
+
+	// 1. SET list
+	res, err := eval.EvaluateQuery(`SET items ["item1" "item2" "item3"]`)
+	if err != nil || res != "OK\n" {
+		t.Fatalf("SET items failed: %v, res: %q", err, res)
+	}
+
+	// 2. VALUEBYINDEX on list
+	res, err = eval.EvaluateQuery(`VALUEBYINDEX items 0`)
+	if err != nil || res != "item1\n" {
+		t.Fatalf("VALUEBYINDEX items 0 failed: %v, res: %q", err, res)
+	}
+
+	res, err = eval.EvaluateQuery(`VALUEBYINDEX items 2`)
+	if err != nil || res != "item3\n" {
+		t.Fatalf("VALUEBYINDEX items 2 failed: %v, res: %q", err, res)
+	}
+
+	// 3. UPDATEINDEX on list
+	res, err = eval.EvaluateQuery(`UPDATEINDEX items 1 "updated_item"`)
+	if err != nil || res != "OK\n" {
+		t.Fatalf("UPDATEINDEX failed: %v, res: %q", err, res)
+	}
+
+	res, err = eval.EvaluateQuery(`VALUEBYINDEX items 1`)
+	if err != nil || res != "updated_item\n" {
+		t.Fatalf("VALUEBYINDEX items 1 failed after update: %v, res: %q", err, res)
+	}
+
+	// 4. DELINDEX on list
+	res, err = eval.EvaluateQuery(`DELINDEX items 0`)
+	if err != nil || res != "OK\n" {
+		t.Fatalf("DELINDEX failed: %v, res: %q", err, res)
+	}
+
+	// 5. DELFROMLIST on list
+	res, err = eval.EvaluateQuery(`DELFROMLIST items "item3"`)
+	if err != nil || res != "OK\n" {
+		t.Fatalf("DELFROMLIST failed: %v, res: %q", err, res)
+	}
+
+	// 6. GET items should remain with [updated_item]
+	res, err = eval.EvaluateQuery(`GET items`)
+	if err != nil || res != "[updated_item]\n" {
+		t.Fatalf("GET items failed: %v, res: %q", err, res)
+	}
+
+	// 7. String literal testing with VALUEBYINDEX
+	res, err = eval.EvaluateQuery(`SET greeting "Raven"`)
+	if err != nil || res != "OK\n" {
+		t.Fatalf("SET greeting failed: %v, res: %q", err, res)
+	}
+
+	res, err = eval.EvaluateQuery(`VALUEBYINDEX greeting 0`)
+	if err != nil || res != "R\n" {
+		t.Fatalf("VALUEBYINDEX greeting 0 failed: %v, res: %q", err, res)
 	}
 }
 
